@@ -17,32 +17,89 @@
 
 window.findNRooksSolution = function(n) {
   var newBoard = new Board({n : n});
-  var board = newBoard.rows();
-  var findRookSolution = function(n) {
-    if (n === 0) {
-      //console.log(newBoard.rows())
+  var possiblePositions = [];
+  for (var i = 0; i < n; i++) {
+    for (var j = 0; j < n; j++) {
+      possiblePositions.push([i, j]);
+    }
+  }
+
+  function rookAdder(rooksLeft, positionsLeft){
+
+    if(rooksLeft === 0){
       return newBoard.rows();
     }
-    for (var i = 0; i < board.length; i++) {
-      for (var j = 0; j < board.length; j++) {
-
-        board[i][j] = 1;
-        if (!newBoard.hasRowConflictAt(i) && !newBoard.hasColConflictAt(j)) {
-          findRookSolution(n - 1);
-        } else {
-          board[i][j] = 0;
-        }
-
+    for (var i = 0; i < positionsLeft.length; i++) {
+      var yPos = positionsLeft[i][0];
+      var xPos = positionsLeft[i][1];
+      newBoard.togglePiece(yPos, xPos);
+      if(!newBoard.hasRowConflictAt(yPos) && !newBoard.hasColConflictAt(xPos)){
+        var newPossibilities = positionsLeft.filter(function(tuple){
+          return !(tuple[0] === yPos || tuple[1] === xPos);
+        })
+        return rookAdder(rooksLeft - 1, newPossibilities);
+      } else {
+        newBoard.togglePiece(yPos, xPos);
       }
     }
   }
-  console.log(findRookSolution(n))
-  return newBoard.rows();
+
+rookAdder(n, possiblePositions);
+return newBoard.rows();
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  var newBoard = new Board({n : n});
+  var possiblePositions = [];
+  for (var i = 0; i < n; i++) {
+    for (var j = 0; j < n; j++) {
+      possiblePositions.push([i, j]);
+    }
+  }
+
+  function rookAdder(rooksLeft, positionsLeft){
+//    console.log(rooksLeft)
+    var rooksOnBoard = newBoard.rows().reduce(function(a,b){
+      return a + b.reduce(function(a, b){
+        return a + b;
+      })
+    }, 0)
+    if(rooksLeft === 0 && rooksOnBoard === n){
+
+      console.log(JSON.stringify(newBoard.rows()),rooksOnBoard)
+      //console.log(JSON.stringify(newBoard.rows()))
+      var solution = newBoard.rows().slice();
+      newBoard.rows().forEach(function(a){
+        a.map(function(b){
+          if(b === 1){
+            return 0;
+          }
+        })
+      })
+      console.log(JSON.stringify(solution), 'solution')
+
+      return solution;
+    }
+    for (var i = 0; i < positionsLeft.length; i++) {
+      var yPos = positionsLeft[i][0];
+      var xPos = positionsLeft[i][1];
+      newBoard.togglePiece(yPos, xPos);
+      console.log(JSON.stringify(newBoard.rows()), 'immediately after toggle')
+      if(!newBoard.hasRowConflictAt(yPos) && !newBoard.hasColConflictAt(xPos)){
+        var newPossibilities = positionsLeft.filter(function(tuple){
+          return !(tuple[0] === yPos || tuple[1] === xPos);
+        })
+        console.log(JSON.stringify(newPossibilities), 'newP');
+        rookAdder(rooksLeft - 1, newPossibilities);
+      } else {
+        newBoard.togglePiece(yPos, xPos);
+      }
+    }
+  }
+
+rookAdder(n, possiblePositions);
+return newBoard.rows();
 
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
   return solutionCount;
