@@ -52,6 +52,7 @@ return newBoard.rows();
 window.countNRooksSolutions = function(n) {
   var newBoard = new Board({n : n});
   var possiblePositions = [];
+  var solutionCount = 0;
   for (var i = 0; i < n; i++) {
     for (var j = 0; j < n; j++) {
       possiblePositions.push([i, j]);
@@ -59,39 +60,27 @@ window.countNRooksSolutions = function(n) {
   }
 
   function rookAdder(rooksLeft, positionsLeft){
-//    console.log(rooksLeft)
     var rooksOnBoard = newBoard.rows().reduce(function(a,b){
       return a + b.reduce(function(a, b){
         return a + b;
       })
     }, 0)
     if(rooksLeft === 0 && rooksOnBoard === n){
-
-      console.log(JSON.stringify(newBoard.rows()),rooksOnBoard)
-      //console.log(JSON.stringify(newBoard.rows()))
-      var solution = newBoard.rows().slice();
-      newBoard.rows().forEach(function(a){
-        a.map(function(b){
-          if(b === 1){
-            return 0;
-          }
-        })
-      })
-      console.log(JSON.stringify(solution), 'solution')
-
-      return solution;
+      solutionCount++;
+    }
+    if(positionsLeft.length === 0){
+      return;
     }
     for (var i = 0; i < positionsLeft.length; i++) {
       var yPos = positionsLeft[i][0];
       var xPos = positionsLeft[i][1];
       newBoard.togglePiece(yPos, xPos);
-      console.log(JSON.stringify(newBoard.rows()), 'immediately after toggle')
       if(!newBoard.hasRowConflictAt(yPos) && !newBoard.hasColConflictAt(xPos)){
         var newPossibilities = positionsLeft.filter(function(tuple){
-          return !(tuple[0] === yPos || tuple[1] === xPos);
+          return !(tuple[0] === yPos || tuple[1] === xPos) && tuple[0] > yPos;
         })
-        console.log(JSON.stringify(newPossibilities), 'newP');
         rookAdder(rooksLeft - 1, newPossibilities);
+        newBoard.togglePiece(yPos, xPos);
       } else {
         newBoard.togglePiece(yPos, xPos);
       }
@@ -99,10 +88,7 @@ window.countNRooksSolutions = function(n) {
   }
 
 rookAdder(n, possiblePositions);
-return newBoard.rows();
-
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
+return solutionCount;
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
