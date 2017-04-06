@@ -152,12 +152,11 @@
     // test if a specific minor diagonal on this board contains a conflict
     hasMinorDiagonalConflictAt: function(row, column) {
       var hasPiece = !!this.rows()[row][column];
-      var maxLength = this.get('n') - Math.max(column, row);
+      var maxLength = Math.min(column, this.get('n') - row - 1);
 
-      if(hasPiece){
-        for(var i = 1; i < maxLength; i++){
-          if(this.rows()[row + i][column - i]){
-            console.log(JSON.stringify(this.rows()));
+      if (hasPiece) {
+        for (var i = 1; i <= maxLength; i++){
+          if (this.rows()[row + i][column - i]){
             return true;
           }
         }
